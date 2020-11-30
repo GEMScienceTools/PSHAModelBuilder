@@ -1,7 +1,90 @@
 using H3.API
 using CSV
+using TOML
 using Printf
 using DataFrames
+using Distributions
+
+
+function smoothing(fname_catalogue, fname_config)
+"""
+    smoothing(fname_catalogue, fname_config)
+
+"""
+
+    model = TOML.parsefile(fname_config)
+    maxdistkm = model["kernel_maximum_distance"]
+    smoothing_σs = model["kernel_smoothing"]
+    
+    tmp = split((basename(fname_catalogue)), '.')
+    fname_out =  joinpath("./tmp", @sprintf("%s_smooth.csv", tmp[1]));  
+
+    df = DataFrame(CSV.File(fname_catalogue));
+    df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
+
+    # Find the resolution and according to h3 resolution
+    h3res = h3GetResolution(df.h3idx[1])
+    println(@sprintf("Edge resolution : %d", h3res))
+    println(@sprintf("Edge length     : %.3f km", edgeLengthKm(h3res)))
+
+    maxdistk = Int(ceil(maxdistkm/edgeLengthKm(h3res)))
+    println(@sprintf("Max dist k      : %d ", maxdistk))
+
+    nocc = Dict{UInt64,Float32}()
+    lons = Dict{UInt64,Float32}()
+    lats = Dict{UInt64,Float32}()
+    println("Number nodes    : ", length(df.h3idx))
+
+    for tmp in enumerate(zip(df.lon, df.lat, df.count))
+
+        base = geoToH3(GeoCoord(deg2rad(tmp[2][2]), deg2rad(tmp[2][1])), h3res);
+        idxs = kRing(base, maxdistk)
+
+        dsts = zeros(Float32, length(idxs))
+        for idx in enumerate(idxs)
+            d = h3Distance(base, idx[2])
+            dsts[idx[1]] = d * edgeLengthKm(h3res)
+            if dsts[idx[1]] < 1.0
+                dsts[idx[1]] = 1.0
+            end
+        end
+
+        # Gaussian weights
+        wei = zeros(size(dsts))
+        for smo in smoothing_σs
+            wei += pdf.(Normal(0.0, smo[2]), dsts) .* smo[1]
+        end
+
+        # Normalising
+        wei /= sum(wei)
+        sum(wei)-1.0 < 1e-5 || error("weights are wrong") 
+
+        for idx in enumerate(zip(idxs, wei))    
+            if haskey(nocc, idx[2][1])
+                # Number of occurrences times weight
+                nocc[idx[2][1]] += tmp[2][3] * idx[2][2]
+            else
+                nocc[idx[2][1]] = tmp[2][3] * idx[2][2]
+                geo1 = h3ToGeo(idx[2][1])
+                lons[idx[2][1]] = rad2deg(geo1.lon)
+                lats[idx[2][1]] = rad2deg(geo1.lat)
+            end
+        end
+
+    end
+
+    smooth = DataFrame(lon=Float64[], lat=Float64[], nocc=Float64[])
+    for k in nocc.keys
+        push!(smooth, [lons[k], lats[k], nocc[k]])
+    end  
+  
+    minlo = describe(smooth, :min, cols=:lon).min[1]
+    maxla = describe(smooth, :max, cols=:lat).max[1]
+
+    CSV.write(fname_out, select(smooth, :lon, :lat, :nocc));
+    println("Created         : ", fname_out)
+    
+end
 
 
 function boxcounting(fname::String, h3res::Int)
