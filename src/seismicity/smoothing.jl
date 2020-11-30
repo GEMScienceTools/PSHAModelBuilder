@@ -7,26 +7,30 @@ using Distributions
 
 
 function smoothing(fname_catalogue::String, fname_config::String)
-
-    model = TOML.parsefile(fname_config)
-    maxdistkm = model["kernel_maximum_distance"]
-    smoothing_σs = model["kernel_smoothing"]
-
-    smoothing(fname_catalogue, smoothing_σs)
-
-
-function smoothing(fname_catalogue::String, smoothing_σs)
-"""
+    """
     smoothing(fname_catalogue, fname_config)
-
-"""
+    """
 
     model = TOML.parsefile(fname_config)
     maxdistkm = model["kernel_maximum_distance"]
     smoothing_σs = model["kernel_smoothing"]
-    
+    smooth = smoothing(fname_catalogue, smoothing_σs, maxdistkm)
+
+    minlo = describe(smooth, :min, cols=:lon).min[1]
+    maxla = describe(smooth, :max, cols=:lat).max[1]
+
     tmp = split((basename(fname_catalogue)), '.')
-    fname_out =  joinpath("./tmp", @sprintf("%s_smooth.csv", tmp[1]));  
+    fname_out = joinpath("./tmp", @sprintf("%s_smooth.csv", tmp[1]));  
+
+    CSV.write(fname_out, select(smooth, :lon, :lat, :nocc));
+    println("Created         : ", fname_out)
+end
+
+
+function smoothing(fname_catalogue::String, smoothing_σs::Array, maxdistkm::Real)
+    """
+    smoothing(fname_catalogue, fname_config)
+    """
 
     df = DataFrame(CSV.File(fname_catalogue));
     df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
@@ -87,12 +91,7 @@ function smoothing(fname_catalogue::String, smoothing_σs)
         push!(smooth, [lons[k], lats[k], nocc[k]])
     end  
   
-    minlo = describe(smooth, :min, cols=:lon).min[1]
-    maxla = describe(smooth, :max, cols=:lat).max[1]
-
-    CSV.write(fname_out, select(smooth, :lon, :lat, :nocc));
-    println("Created         : ", fname_out)
-    
+    return smooth
 end
 
 
