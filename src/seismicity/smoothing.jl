@@ -28,9 +28,18 @@ end
 
 
 function smoothing(fname_catalogue::String, smoothing_σs::Array, maxdistkm::Real)
-    """
-    smoothing(fname_catalogue, fname_config)
-    """
+"""
+    
+    smoothing(fname, smoothing_σs, maxdistkm) 
+    
+Using the H3 library it counts the earthquakes from the catalogue included
+in the .csv file defined by `fname`. 
+
+#Examples
+```julia-repl
+julia> smoothing('count.csv', [[1.0, 20]], 50)
+```
+"""
 
     df = DataFrame(CSV.File(fname_catalogue));
     df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
@@ -96,13 +105,18 @@ end
 
 
 function boxcounting(fname::String, h3res::Int)
-    """
+"""
     
-    boxcounting() 
+    boxcounting(fname, h3res) 
     
-    Using the H3 library it counts the earthquakes from the catalogue included
-    in the .csv file defined by `fname`. 
-    """
+Using the H3 library it counts the earthquakes from the catalogue included
+in the .csv file defined by `fname`. 
+
+#Examples
+```julia-repl
+julia> boxcounting('catalogue.csv', 5)
+```
+"""
 
     println("Edge length ", edgeLengthKm(h3res))
 
@@ -143,21 +157,21 @@ end
 
 
 function distribute_total_rates(aGR::Float64, bGR::Float64, points::String, fname_out::String)
-    """
+"""
     
     distribute_total_rates(aGR, bGR, points, sources)
 
-    Distributes the seismicity specified by the `aGR` and `bGR` parameters
-    over an irregular grid of `points`. `points` is a .csv file with three
-    columns: lon, lat, nocc
-    The output goes into the file `fname_out`, a .csv formatted file with 
-    the following columns: lon, lat, aGR, bGR
+Distributes the seismicity specified by the `aGR` and `bGR` parameters
+over an irregular grid of `points`. `points` is a .csv file with three
+columns: lon, lat, nocc
+The output goes into the file `fname_out`, a .csv formatted file with 
+the following columns: lon, lat, aGR, bGR
 
-    # Examples
-    ```julia-repl
-    julia> distribute_total_rates(4.0, 1.0, './smooth.csv'., 'sources.xml')
-    ```
-    """
+# Examples
+```julia-repl
+julia> distribute_total_rates(4.0, 1.0, './smooth.csv'., 'sources.xml')
+```
+"""
     
     # Load the points
     points_df = DataFrame(CSV.File(fname));
