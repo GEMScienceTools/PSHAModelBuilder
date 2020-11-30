@@ -6,7 +6,16 @@ using DataFrames
 using Distributions
 
 
-function smoothing(fname_catalogue, fname_config)
+function smoothing(fname_catalogue::String, fname_config::String)
+
+    model = TOML.parsefile(fname_config)
+    maxdistkm = model["kernel_maximum_distance"]
+    smoothing_σs = model["kernel_smoothing"]
+
+    smoothing(fname_catalogue, smoothing_σs)
+
+
+function smoothing(fname_catalogue::String, smoothing_σs)
 """
     smoothing(fname_catalogue, fname_config)
 
@@ -88,6 +97,13 @@ end
 
 
 function boxcounting(fname::String, h3res::Int)
+    """
+    
+    boxcounting() 
+    
+    Using the H3 library it counts the earthquakes from the catalogue included
+    in the .csv file defined by `fname`. 
+    """
 
     println("Edge length ", edgeLengthKm(h3res))
 
