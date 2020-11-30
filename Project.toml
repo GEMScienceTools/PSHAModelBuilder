@@ -2,3 +2,9 @@ name = "PSHAModelBuilder"
 uuid = "2be8aca4-be12-4446-a1ed-019ced9bed6a"
 authors = ["Marco <marco.pagani@globalquakemodel.org>"]
 version = "0.1.0"
+
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+H3 = "f62fece2-b996-571a-b4c9-e662aba1c617"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"

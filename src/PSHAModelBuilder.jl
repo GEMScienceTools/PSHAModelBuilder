@@ -1,5 +1,5 @@
 module PSHAModelBuilder
 
-greet() = print("Hello World!")
+include("./seismicity/smoothing.jl")
 
 end # module
