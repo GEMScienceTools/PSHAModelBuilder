@@ -6,20 +6,33 @@ using DataFrames
 using Distributions
 
 
-function smoothing(fname_catalogue::String, fname_config::String)
-    """
-    smoothing(fname_catalogue, fname_config)
-    """
+function smoothing(fname_count::String, fname_config::String, fname_out::String='')
+"""
+    smoothing(fname_count, fname_config)
+
+The `fname_count` is a `.csv` file containing for each row a (lon, lat, count)
+tuple. This function smooths the count in this file using the gaussian kernels
+defined `smoothing_σs` and the `maxdistkm` defined in the configuration file. 
+
+The output is stored in a `.csv` file. If the `fname_out` is empty the output 
+file wibe created in the same folder of the `fname_count` file and the name 
+`fname_count` with the postfix `_smooth.csv` added.
+
+#Examples
+```julia-repl
+julia> smoothing('count.csv', 'config.toml')
+```
+"""
 
     model = TOML.parsefile(fname_config)
     maxdistkm = model["kernel_maximum_distance"]
     smoothing_σs = model["kernel_smoothing"]
-    smooth = smoothing(fname_catalogue, smoothing_σs, maxdistkm)
+    smooth = smoothing(fname_count, smoothing_σs, maxdistkm)
 
     minlo = describe(smooth, :min, cols=:lon).min[1]
     maxla = describe(smooth, :max, cols=:lat).max[1]
 
-    tmp = split((basename(fname_catalogue)), '.')
+    tmp = split((basename(fname_count)), '.')
     fname_out = joinpath("./tmp", @sprintf("%s_smooth.csv", tmp[1]));  
 
     CSV.write(fname_out, select(smooth, :lon, :lat, :nocc));
@@ -27,13 +40,16 @@ function smoothing(fname_catalogue::String, fname_config::String)
 end
 
 
-function smoothing(fname_catalogue::String, smoothing_σs::Array, maxdistkm::Real)
+function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real)
 """
-    
     smoothing(fname, smoothing_σs, maxdistkm) 
     
-Using the H3 library it counts the earthquakes from the catalogue included
-in the .csv file defined by `fname`. 
+The `fname_count` is a .csv file containing for each row a (lon, lat, count)
+tuple. This function smooths the count in this file using the gaussian kernels
+defined in the array `smoothing_σs`; this array contains N (weight, std) 
+tuples where std is a standard deviation [km]. The sum of weights in 
+`smoothing_σs` must be equal to 1. The `maxdistkm` is the maximum distance [km]
+used to perform the smoothing.
 
 #Examples
 ```julia-repl
@@ -41,7 +57,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 ```
 """
 
-    df = DataFrame(CSV.File(fname_catalogue));
+    df = DataFrame(CSV.File(fname_count));
     df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
 
     # Find the resolution and according to h3 resolution
