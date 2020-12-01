@@ -6,9 +6,9 @@ using DataFrames
 using Distributions
 
 
-function smoothing(fname_count::String, fname_config::String, fname_out::String='')
+function smoothing(fname_count::String, fname_config::String, fname_out::String="")
 """
-    smoothing(fname_count, fname_config)
+    smoothing(fname_count, fname_config[, fname_out])
 
 The `fname_count` is a `.csv` file containing for each row a (lon, lat, count)
 tuple. This function smooths the count in this file using the gaussian kernels
@@ -32,8 +32,10 @@ julia> smoothing('count.csv', 'config.toml')
     minlo = describe(smooth, :min, cols=:lon).min[1]
     maxla = describe(smooth, :max, cols=:lat).max[1]
 
-    tmp = split((basename(fname_count)), '.')
-    fname_out = joinpath("./tmp", @sprintf("%s_smooth.csv", tmp[1]));  
+    if length(fname_out) == 0
+        tmp = split((basename(fname_count)), '.')
+        fname_out = joinpath("./tmp", @sprintf("%s_smooth.csv", tmp[1]));  
+    end
 
     CSV.write(fname_out, select(smooth, :lon, :lat, :nocc));
     println("Created         : ", fname_out)
