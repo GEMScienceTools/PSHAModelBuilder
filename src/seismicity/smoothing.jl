@@ -7,22 +7,6 @@ using Distributions
 
 
 function smoothing(fname_count::String, fname_config::String, fname_out::String="")
-"""
-    smoothing(fname_count, fname_config[, fname_out])
-
-The `fname_count` is a `.csv` file containing for each row a (lon, lat, count)
-tuple. This function smooths the count in this file using the gaussian kernels
-defined `smoothing_σs` and the `maxdistkm` defined in the configuration file. 
-
-The output is stored in a `.csv` file. If the `fname_out` is empty the output 
-file wibe created in the same folder of the `fname_count` file and the name 
-`fname_count` with the postfix `_smooth.csv` added.
-
-#Examples
-```julia-repl
-julia> smoothing('count.csv', 'config.toml')
-```
-"""
 
     model = TOML.parsefile(fname_config)
     maxdistkm = model["kernel_maximum_distance"]
