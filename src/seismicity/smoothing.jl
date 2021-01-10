@@ -98,7 +98,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
     end
 
     smooth = DataFrame(lon=Float64[], lat=Float64[], nocc=Float64[])
-    for k in nocc.keys
+    for k in keys(nocc)
         push!(smooth, [lons[k], lats[k], nocc[k]])
     end  
   
