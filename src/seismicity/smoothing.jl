@@ -191,7 +191,7 @@ julia> distribute_total_rates(4.0, 1.0, './smooth.csv'., 'sources.xml')
     
     # Computing local aGR
     aGR_points = log10.(total_activity_rate*weights)
-    bGR_points = ones(size(aGR_points))
+    bGR_points = ones(size(aGR_points)) * bGR
     
     # Creating output file
     outdf = DataFrame(lon=points_df.lon, lat=points_df.lat, agr = aGR_points, 
