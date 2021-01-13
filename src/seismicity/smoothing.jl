@@ -37,7 +37,7 @@ tuples where std is a standard deviation [km]. The sum of weights in
 `smoothing_σs` must be equal to 1. The `maxdistkm` is the maximum distance [km]
 used to perform the smoothing.
 
-#Examples
+# Examples
 ```julia-repl
 julia> smoothing('count.csv', [[1.0, 20]], 50)
 ```
@@ -158,14 +158,15 @@ julia> boxcounting('catalogue.csv', 5)
 end
 
 
-function distribute_total_rates(aGR::Float64, bGR::Float64, points::String, fname_out::String)
+function distribute_total_rates(aGR::Float64, bGR::Float64, 
+                                fname_points::String, fname_out::String)
 """
     
-    distribute_total_rates(aGR, bGR, points, sources)
+    distribute_total_rates(aGR, bGR, fname_points, fname_out)
 
 Distributes the seismicity specified by the `aGR` and `bGR` parameters
-over an irregular grid of `points`. `points` is a .csv file with three
-columns: lon, lat, nocc
+over an irregular grid of `fname_points`. `fname_points` is a .csv file 
+with three columns: lon, lat, nocc
 The output goes into the file `fname_out`, a .csv formatted file with 
 the following columns: lon, lat, aGR, bGR
 
@@ -176,11 +177,14 @@ julia> distribute_total_rates(4.0, 1.0, './smooth.csv'., 'sources.xml')
 """
     
     # Load the points
-    points_df = DataFrame(CSV.File(fname));
+    points_df = DataFrame(CSV.File(fname_points));
     
     # Normalize the weights;
     normalizing_factor = sum(points_df.nocc)
     weights = points_df.nocc ./ normalizing_factor
+
+    # Checking that weights are okay
+    @assert abs(sum(weights)-1.0) < 1e-7 "Weights does not sum to unity"
     
     # Total activity rate
     total_activity_rate = 10^aGR
