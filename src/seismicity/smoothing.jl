@@ -92,8 +92,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
         for idx in enumerate(zip(idxs, wei))
 
             if !h3IsValid(idx[2][1])
-                println(idx)
-                break 
+                println("wrong index ",base," ",maxdistk)
             end
 
             # Updating the nocc, lons and lats dictionaries
