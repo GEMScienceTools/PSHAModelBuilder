@@ -100,7 +100,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
                 lats[idx[2][1]] = rad2deg(geo1.lat)
             end
 
-            if lats[idx[2][1]] > 60:
+            if lats[idx[2][1]] > 60
                 println(idx[2][1], rad2deg(geo1.lon), rad2deg(geo1.lat), maxdistk)
             end
         end
