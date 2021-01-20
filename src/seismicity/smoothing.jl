@@ -91,7 +91,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
         # Updating the array with the smoothing
         for idx in enumerate(zip(idxs, wei))
 
-            if !is_valid(idx[2][1])
+            if !h3IsValid(idx[2][1])
                 println(idx)
                 break 
             end
