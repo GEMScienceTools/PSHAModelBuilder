@@ -67,7 +67,15 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
         # Get the indexes of cells within 'maxdistk' from the cell with index
         # equal to 'base'. 'maxdistk' is the distance in terms of the cell 
         # size
-        idxs = kRing(base, maxdistk)
+        tmp_idxs = kRing(base, maxdistk)
+
+        # Removing invalid indexes
+        idxs = []
+        for i in tmp_idxs:
+            if h3IsValid(i)
+                push!(idxs, i)
+            end
+        end
 
         dsts = zeros(Float32, length(idxs))
         for idx in enumerate(idxs)
@@ -92,7 +100,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
         for idx in enumerate(zip(idxs, wei))
 
             if !h3IsValid(idx[2][1])
-                println(@sprintf("wrong index 0x%08x", base))
+                println(@sprintf("wrong index obtained from kRing with 0x%08x", base))
             end
 
             # Updating the nocc, lons and lats dictionaries
