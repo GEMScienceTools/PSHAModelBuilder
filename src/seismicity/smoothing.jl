@@ -90,6 +90,12 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 
         # Updating the array with the smoothing
         for idx in enumerate(zip(idxs, wei))
+
+            if not is_valid(idx[2][1])
+                println(idx)
+                break 
+            end
+
             # Updating the nocc, lons and lats dictionaries
             if haskey(nocc, idx[2][1])
                 nocc[idx[2][1]] += tmp[2][3] * idx[2][2]
