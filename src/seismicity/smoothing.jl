@@ -61,7 +61,12 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 
     for tmp in enumerate(zip(df.lon, df.lat, df.count))
 
+        # Cell index to whick the current point (i.e. cell center) belongs to
         base = geoToH3(GeoCoord(deg2rad(tmp[2][2]), deg2rad(tmp[2][1])), h3res);
+
+        # Get the indexes of cells within 'maxdistk' from the cell with index
+        # equal to 'base'. 'maxdistk' is the distance in terms of the cell 
+        # size
         idxs = kRing(base, maxdistk)
 
         dsts = zeros(Float32, length(idxs))
@@ -83,9 +88,10 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
         wei /= sum(wei)
         sum(wei)-1.0 < 1e-5 || error("weights are wrong") 
 
-        for idx in enumerate(zip(idxs, wei))    
+        # Updating the array with the smoothing
+        for idx in enumerate(zip(idxs, wei))
+            # Updating the nocc, lons and lats dictionaries
             if haskey(nocc, idx[2][1])
-                # Number of occurrences times weight
                 nocc[idx[2][1]] += tmp[2][3] * idx[2][2]
             else
                 nocc[idx[2][1]] = tmp[2][3] * idx[2][2]
@@ -93,10 +99,15 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
                 lons[idx[2][1]] = rad2deg(geo1.lon)
                 lats[idx[2][1]] = rad2deg(geo1.lat)
             end
+
+            if lats[idx[2][1]] > 60:
+                println(idx[2][1], lats[idx[2][1]], lons[idx[2][1]], maxdistk)
+            end
         end
 
     end
 
+    # Save results into file
     smooth = DataFrame(lon=Float64[], lat=Float64[], nocc=Float64[])
     for k in keys(nocc)
         push!(smooth, [lons[k], lats[k], nocc[k]])
@@ -194,8 +205,8 @@ julia> distribute_total_rates(4.0, 1.0, './smooth.csv'., 'sources.xml')
     bGR_points = ones(size(aGR_points)) * bGR
     
     # Creating output file
-    outdf = DataFrame(lon=points_df.lon, lat=points_df.lat, agr = aGR_points, 
-                      bgr = bGR_points)
+    outdf = DataFrame(lon=points_df.lon, lat=points_df.lat, agr=aGR_points, 
+                      bgr=bGR_points)
     CSV.write(fname_out, outdf);
     
 end
