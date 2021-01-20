@@ -71,7 +71,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 
         # Removing invalid indexes
         idxs = []
-        for i in tmp_idxs:
+        for i in tmp_idxs
             if h3IsValid(i)
                 push!(idxs, i)
             end
