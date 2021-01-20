@@ -92,7 +92,8 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
         for idx in enumerate(zip(idxs, wei))
 
             if !h3IsValid(idx[2][1])
-                println("wrong index ",base," ",maxdistk)
+                println("wrong index ")
+                base
             end
 
             # Updating the nocc, lons and lats dictionaries
@@ -105,9 +106,6 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
                 lats[idx[2][1]] = rad2deg(geo1.lat)
             end
 
-            if lats[idx[2][1]] > 60
-                println(idx[2][1], " ", lons[idx[2][1]], " ",lats[idx[2][1]], " ",maxdistk)
-            end
         end
 
     end
