@@ -9,6 +9,7 @@ function get_gr_params(config::Dict, source_id::String)
     get_gr_params(config, source_id
 
 """
+    print(config)
     if haskey(config["sources"], source_id)
         if haskey(config["sources"][source_id], "agr")
             agr = config["sources"][source_id]["agr"]
