@@ -6,8 +6,17 @@ using DataFrames
 using Distributions
 
 if !@isdefined h3GetResolution
+    @info "Defining h3GetResolution"
     function h3GetResolution(h3)
         getResolution(h3)
+    end
+end
+
+
+if !@isdefined edgeLengthKm
+    @info "defining edgeLengthKm"
+    function edgeLengthKm(h3)
+        getHexagonEdgeLengthAvgKm(h3)
     end
 end
 
