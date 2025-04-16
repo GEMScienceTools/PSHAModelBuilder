@@ -20,6 +20,12 @@ if !@isdefined edgeLengthKm
     end
 end
 
+
+function edgeLengthKm(h3::Int32)
+    h3_ = Int64(h3)
+    edgeLengthKm(h3_)
+end
+
 function smoothing(fname_count::String, fname_config::String, fname_out::String="")
 
     model = TOML.parsefile(fname_config)
