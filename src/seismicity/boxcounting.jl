@@ -10,8 +10,8 @@ using DataFrames
 @static if !@isdefined(GeoCoord)
     @info "Defining GeoCoord compatibility struct"
     struct GeoCoord
-        lat::Float64
-        lon::Float64
+        lat::Float64 # in radians
+        lon::Float64 # in radians
     end
 end
 
@@ -19,9 +19,12 @@ end
 if !(@isdefined geoToH3) && (@isdefined latLngToCell)
     @info "Defining geoToH3 compatibility shim"
     function geoToH3(coord::GeoCoord, res::Integer)
-        lat_deg = rad2deg(coord.lat)
-        lon_deg = rad2deg(coord.lon)
-        return latLngToCell(LatLng(lat_deg, lon_deg), res)
+        return latLngToCell(LatLng(coord.lat, coord.lon), res)
+    end
+
+    function h3ToGeo(cell_id)
+        lat_lng_rad = cellToLatLng(cell_id)
+        GeoCoord(lat_lng_rad.lat, lat_lng_rad.lng)
     end
 end
 
