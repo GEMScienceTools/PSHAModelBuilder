@@ -4,6 +4,16 @@ using Printf
 using TOML
 using DataFrames
 
+
+# Define compatibility shim if `geoToH3` doesn't exist, but `latLngToCell` does
+if !(@isdefined geoToH3) && (@isdefined latLngToCell)
+    @info "Defining shim: geoToH3 from latLngToCell"
+    function geoToH3(lat::Real, lng::Real, res::Integer)
+        return latLngToCell((lat, lng), res)
+    end
+end
+
+
 function get_gr_params(config::Dict, source_id::String)
 """
     get_gr_params(config, source_id
