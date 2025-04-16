@@ -5,6 +5,11 @@ using Printf
 using DataFrames
 using Distributions
 
+if !@isdefined h3GetResolution
+    function h3GetResolution(h3)
+        getResolution(h3)
+    end
+end
 
 function smoothing(fname_count::String, fname_config::String, fname_out::String="")
 
