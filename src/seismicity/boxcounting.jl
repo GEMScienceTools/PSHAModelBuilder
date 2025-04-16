@@ -21,7 +21,7 @@ if !(@isdefined geoToH3) && (@isdefined latLngToCell)
     function geoToH3(coord::GeoCoord, res::Integer)
         lat_deg = rad2deg(coord.lat)
         lon_deg = rad2deg(coord.lon)
-        return latLngToCell((lat_deg, lon_deg), res)
+        return latLngToCell(LatLng(lat_deg, lon_deg), res)
     end
 end
 
