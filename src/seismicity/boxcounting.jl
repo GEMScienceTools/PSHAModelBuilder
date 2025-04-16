@@ -6,10 +6,22 @@ using DataFrames
 
 
 # Define compatibility shim if `geoToH3` doesn't exist, but `latLngToCell` does
+# Conditionally define GeoCoord at compile-time (valid and recommended)
+@static if !@isdefined(GeoCoord)
+    @info "Defining GeoCoord compatibility struct"
+    struct GeoCoord
+        lat::Float64
+        lon::Float64
+    end
+end
+
+# Runtime conditional method definition (always allowed)
 if !(@isdefined geoToH3) && (@isdefined latLngToCell)
-    @info "Defining shim: geoToH3 from latLngToCell"
-    function geoToH3(lat::Real, lng::Real, res::Integer)
-        return latLngToCell((lat, lng), res)
+    @info "Defining geoToH3 compatibility shim"
+    function geoToH3(coord::GeoCoord, res::Integer)
+        lat_deg = rad2deg(coord.lat)
+        lon_deg = rad2deg(coord.lon)
+        return latLngToCell((lat_deg, lon_deg), res)
     end
 end
 
