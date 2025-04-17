@@ -159,7 +159,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
             if base == idx[2]
                 d = Float32(0.0)
             else
-                d = h3Distance(base, idx[2])
+                d = h3Distance(base, ", ", idx[2])
                 if d isa H3ErrorCode
                     println(base, idx[2])
                 end
