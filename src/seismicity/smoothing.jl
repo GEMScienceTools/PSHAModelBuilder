@@ -20,7 +20,7 @@ edge_length_check = edgeLengthKm(3)
 if edge_length_check isa number
     const get_avg_edge_length_km = edgeLengthKm
 else
-    import H3.API.Lib: getHexagonEdgeLengthAvgKmreturn out[]
+    import H3.API.Lib: getHexagonEdgeLengthAvgKm
     function get_avg_edge_length_km(res)
         out = Ref{Cdouble}()
         err = getHexagonEdgeLengthAvgKm(res, out)
