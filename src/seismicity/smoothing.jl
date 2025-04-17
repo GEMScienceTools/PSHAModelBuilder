@@ -152,10 +152,17 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 
         dsts = zeros(Float32, length(idxs))
         for idx in enumerate(idxs)
+            #println("base: ", base)
+            #println(typeof(base))
+            #println("idx[2] ", idx[2])
+            #println(typeof(idx[2]))
             if base == idx[2]
                 d = Float32(0.0)
             else
                 d = h3Distance(base, idx[2])
+                if d isa H3ErrorCode
+                    println(base, idx[2])
+                end
             end
             dsts[idx[1]] = Float32(d * edge_length)
             if dsts[idx[1]] < 1.0
