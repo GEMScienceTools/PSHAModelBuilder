@@ -152,10 +152,6 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 
         dsts = zeros(Float32, length(idxs))
         for idx in enumerate(idxs)
-            println("base: ", base)
-            println(typeof(base))
-            println("idx[2] ", idx[2])
-            println(typeof(idx[2]))
             if base == idx[2]
                 d = Float32(0.0)
             else
