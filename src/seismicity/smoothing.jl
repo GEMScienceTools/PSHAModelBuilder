@@ -57,7 +57,7 @@ end
 
 if !@isdefined h3Distance
     @info "defining h3Distance"
-    const h3Distance = gridDistance
+    function h3distance(
 end
 
 
@@ -151,6 +151,10 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 
         dsts = zeros(Float32, length(idxs))
         for idx in enumerate(idxs)
+            println("d: ", d)
+            println(typeof(d))
+            println("idx[2] ", idx[2])
+            println(typeof(idx[2]))
             d = h3Distance(base, idx[2])
             dsts[idx[1]] = d * edge_length
             if dsts[idx[1]] < 1.0
