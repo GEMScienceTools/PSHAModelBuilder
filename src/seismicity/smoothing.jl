@@ -5,6 +5,8 @@ using Printf
 using DataFrames
 using Distributions
 
+import h3.API: edgeLengthKm
+
 if !@isdefined h3GetResolution
     @info "Defining h3GetResolution"
     function h3GetResolution(h3)
