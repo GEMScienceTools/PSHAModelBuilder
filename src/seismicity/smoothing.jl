@@ -48,7 +48,7 @@ if !(@isdefined geoToH3) && (@isdefined latLngToCell)
 end
 
 
-if !i(sdefined kRing)
+if !@isdefined kRing
     @info "defining kRing"
     const kRing = gridDisk
 end
