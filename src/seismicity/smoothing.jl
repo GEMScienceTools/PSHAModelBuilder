@@ -57,7 +57,8 @@ end
 
 if !@isdefined h3Distance
     @info "defining h3Distance"
-    function h3distance(
+    #function h3distance(
+    const h3distance = gridDistance
 end
 
 
