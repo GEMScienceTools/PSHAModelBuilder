@@ -55,6 +55,12 @@ end
 
 
 
+if !@isdefined h3Distance
+    @info "defining h3Distance"
+    const h3Distance = gridDistance
+end
+
+
 # the function and api have changed; the H3.jl library as of 3.2 is not defined correctly
 edge_length_check = edgeLengthKm(3)
 if edge_length_check isa Number
