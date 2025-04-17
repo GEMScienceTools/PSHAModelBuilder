@@ -71,6 +71,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
     df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
 
     # Find the resolution and according to h3 resolution
+    h3res = h3GetResolution(df.h3idx[1])
     edge_length = get_avg_edge_length_km(h3res)
     println(@sprintf("Edge resolution : %d", h3res))
     println(@sprintf("Edge length     : %.3f km", edgeLengthKm(h3res)))
