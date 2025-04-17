@@ -48,6 +48,13 @@ if !(@isdefined geoToH3) && (@isdefined latLngToCell)
 end
 
 
+if !isdefined kRing
+    @info "defining kRing"
+    const kRing = gridDisk
+end
+
+
+
 # the function and api have changed; the H3.jl library as of 3.2 is not defined correctly
 edge_length_check = edgeLengthKm(3)
 if edge_length_check isa Number
