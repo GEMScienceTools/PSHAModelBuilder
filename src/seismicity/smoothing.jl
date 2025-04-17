@@ -17,7 +17,7 @@ end
 
 # the function and api have changed; the H3.jl library as of 3.2 is not defined correctly
 edge_length_check = edgeLengthKm(3)
-if edge_length_check isa number
+if edge_length_check isa Number
     const get_avg_edge_length_km = edgeLengthKm
 else
     import H3.API.Lib: getHexagonEdgeLengthAvgKm
