@@ -15,6 +15,36 @@ if !@isdefined h3GetResolution
 end
 
 
+if !@isdefined h3IsValid
+    @info "Defining h3IsValid"
+    function h3IsValid(h3)
+        isValidCell(h3)
+    end
+end
+
+
+@static if !@isdefined(GeoCoord)
+    @info "Defining GeoCoord compatibility struct"
+    struct GeoCoord
+        lat::Float64 # in radians
+        lon::Float64 # in radians
+    end
+end
+
+# Runtime conditional method definition (always allowed)
+if !(@isdefined geoToH3) && (@isdefined latLngToCell)
+    @info "Defining geoToH3 compatibility shim"
+    function geoToH3(coord::GeoCoord, res::Integer)
+        return latLngToCell(LatLng(coord.lat, coord.lon), res)
+    end
+
+    function h3ToGeo(cell_id)
+        lat_lng_rad = cellToLatLng(cell_id)
+        GeoCoord(lat_lng_rad.lat, lat_lng_rad.lng)
+    end
+end
+
+
 # the function and api have changed; the H3.jl library as of 3.2 is not defined correctly
 edge_length_check = edgeLengthKm(3)
 if edge_length_check isa Number
@@ -74,7 +104,8 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
     h3res = h3GetResolution(df.h3idx[1])
     edge_length = get_avg_edge_length_km(h3res)
     println(@sprintf("Edge resolution : %d", h3res))
-    println(@sprintf("Edge length     : %.3f km", edgeLengthKm(h3res)))
+    #println(@sprintf("Edge length     : %.3f km", edgeLengthKm(h3res)))
+    println(@sprintf("Edge length     : %.3f km", edge_length))
 
     maxdistk = Int(ceil(maxdistkm / edge_length))
     println(@sprintf("Max dist k      : %d ", maxdistk))
@@ -105,7 +136,7 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
         dsts = zeros(Float32, length(idxs))
         for idx in enumerate(idxs)
             d = h3Distance(base, idx[2])
-            dsts[idx[1]] = d * edgeLengthKm(h3res)
+            dsts[idx[1]] = d * edge_length
             if dsts[idx[1]] < 1.0
                 dsts[idx[1]] = 1.0
             end
