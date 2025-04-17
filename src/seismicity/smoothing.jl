@@ -35,6 +35,9 @@ end
 if !(@isdefined geoToH3) && (@isdefined latLngToCell)
     @info "Defining geoToH3 compatibility shim"
     function geoToH3(coord::GeoCoord, res::Integer)
+        if res isa Int32
+            res = Int64(res)
+        end
         return latLngToCell(LatLng(coord.lat, coord.lon), res)
     end
 
