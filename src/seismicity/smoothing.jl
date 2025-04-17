@@ -5,7 +5,7 @@ using Printf
 using DataFrames
 using Distributions
 
-import H3.API: edgeLengthKm
+#import H3.API: edgeLengthKm
 
 if !@isdefined h3GetResolution
     @info "Defining h3GetResolution"
@@ -15,18 +15,20 @@ if !@isdefined h3GetResolution
 end
 
 
-if !@isdefined edgeLengthKm
-    @info "defining edgeLengthKm"
-    function edgeLengthKm(h3)
-        getHexagonEdgeLengthAvgKm(h3)
+# the function and api have changed; the H3.jl library as of 3.2 is not defined correctly
+edge_length_check = edgeLengthKm(3)
+if edge_length_check isa number
+    const get_avg_edge_length_km = edgeLengthKm
+else
+    import H3.API.Lib: getHexagonEdgeLengthAvgKmreturn out[]
+    function get_avg_edge_length_km(res)
+        out = Ref{Cdouble}()
+        err = getHexagonEdgeLengthAvgKm(res, out)
+        err == 0 || error("H3 error code $err")
+        return out[]
     end
 end
-
-
-function edgeLengthKm(h3::Int32)
-    h3_ = Int64(h3)
-    edgeLengthKm(h3_)
-end
+        
 
 function smoothing(fname_count::String, fname_config::String, fname_out::String="")
 
@@ -69,11 +71,11 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
     df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
 
     # Find the resolution and according to h3 resolution
-    h3res = h3GetResolution(df.h3idx[1])
+    edge_length = get_avg_edge_length_km(h3res)
     println(@sprintf("Edge resolution : %d", h3res))
     println(@sprintf("Edge length     : %.3f km", edgeLengthKm(h3res)))
 
-    maxdistk = Int(ceil(maxdistkm/edgeLengthKm(h3res)))
+    maxdistk = Int(ceil(maxdistkm / edge_length))
     println(@sprintf("Max dist k      : %d ", maxdistk))
 
     nocc = Dict{UInt64,Float32}()
