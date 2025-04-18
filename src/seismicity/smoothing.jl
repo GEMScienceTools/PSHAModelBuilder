@@ -97,7 +97,6 @@ function smoothing(fname_count::String, fname_config::String, fname_out::String=
 end
 
 
-function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real)
 """
     smoothing(fname, smoothing_σs, maxdistkm) 
     
@@ -113,7 +112,8 @@ used to perform the smoothing.
 julia> smoothing('count.csv', [[1.0, 20]], 50)
 ```
 """
-
+function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real; 
+        default_distance::Int64=20)
     df = DataFrame(CSV.File(fname_count));
     df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
 
@@ -161,10 +161,8 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
             else
                 d = h3Distance(base, idx[2])
                 if d isa H3ErrorCode
-                    println("failed: ", base, ", ", idx[2])
-                else
-                    println("worked: ", base, ", ", idx[2])
-
+                    println("failed: ", base, ", ", idx[2]". Using default $default_distance")
+                    d = default_distance
                 end
 
             end
