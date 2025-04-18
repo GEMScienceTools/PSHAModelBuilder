@@ -161,7 +161,7 @@ function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real;
             else
                 d = h3Distance(base, idx[2])
                 if d isa H3ErrorCode
-                    println("failed: ", base, ", ", idx[2]". Using default $default_distance")
+                    @info "failed: $(base), $(idx[2]). Using default $default_distance"
                     d = default_distance
                 end
 
