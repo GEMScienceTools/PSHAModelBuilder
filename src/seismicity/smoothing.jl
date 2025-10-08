@@ -80,8 +80,8 @@ end
 function smoothing(fname_count::String, fname_config::String, fname_out::String="")
 
     model = TOML.parsefile(fname_config)
-    maxdistkm = model["kernel_maximum_distance"]
-    smoothing_σs = model["kernel_smoothing"]
+    maxdistkm = model["smoothing"]["kernel_maximum_distance"]
+    smoothing_σs = model["smoothing"]["kernel_smoothing"]
     smooth = smoothing(fname_count, smoothing_σs, maxdistkm)
 
     minlo = describe(smooth, :min, cols=:lon).min[1]
