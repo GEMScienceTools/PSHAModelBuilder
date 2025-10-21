@@ -200,15 +200,6 @@ function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real;
                 end
 
             end
-            #else
-            #    d = h3Distance(base, idx[2])
-            #    if d isa H3ErrorCode
-            #        @info "failed: $(base), $(idx[2]). Using default $default_distance"
-            #        d = default_distance
-            #    end
-
-            #end
-            #dsts[idx[1]] = Float32(d * edge_length)
             dsts[idx[1]] = d
             if dsts[idx[1]] < 1.0
                 dsts[idx[1]] = 1.0
