@@ -5,6 +5,77 @@ using Printf
 using DataFrames
 using Distributions
 
+#import H3.API: edgeLengthKm
+
+if !@isdefined h3GetResolution
+    @info "Defining h3GetResolution"
+    function h3GetResolution(h3)
+        getResolution(h3)
+    end
+end
+
+
+if !@isdefined h3IsValid
+    @info "Defining h3IsValid"
+    function h3IsValid(h3)
+        isValidCell(h3)
+    end
+end
+
+
+@static if !@isdefined(GeoCoord)
+    @info "Defining GeoCoord compatibility struct"
+    struct GeoCoord
+        lat::Float64 # in radians
+        lon::Float64 # in radians
+    end
+end
+
+# Runtime conditional method definition (always allowed)
+if !(@isdefined geoToH3) && (@isdefined latLngToCell)
+    @info "Defining geoToH3 compatibility shim"
+    function geoToH3(coord::GeoCoord, res::Integer)
+        if res isa Int32
+            res = Int64(res)
+        end
+        return latLngToCell(LatLng(coord.lat, coord.lon), res)
+    end
+
+    function h3ToGeo(cell_id)
+        lat_lng_rad = cellToLatLng(cell_id)
+        GeoCoord(lat_lng_rad.lat, lat_lng_rad.lng)
+    end
+end
+
+
+if !@isdefined kRing
+    @info "defining kRing"
+    const kRing = gridDisk
+end
+
+
+
+if !@isdefined h3Distance
+    @info "defining h3Distance"
+    #function h3distance(
+    const h3Distance = gridDistance
+end
+
+
+# the function and api have changed; the H3.jl library as of 3.2 is not defined correctly
+edge_length_check = edgeLengthKm(3)
+if edge_length_check isa Number
+    const get_avg_edge_length_km = edgeLengthKm
+else
+    import H3.API.Lib: getHexagonEdgeLengthAvgKm
+    function get_avg_edge_length_km(res)
+        out = Ref{Cdouble}()
+        err = getHexagonEdgeLengthAvgKm(res, out)
+        err == 0 || error("H3 error code $err")
+        return out[]
+    end
+end
+        
 
 function smoothing(fname_count::String, fname_config::String, fname_out::String="")
 
@@ -26,7 +97,6 @@ function smoothing(fname_count::String, fname_config::String, fname_out::String=
 end
 
 
-function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real)
 """
     smoothing(fname, smoothing_σs, maxdistkm) 
     
@@ -42,16 +112,19 @@ used to perform the smoothing.
 julia> smoothing('count.csv', [[1.0, 20]], 50)
 ```
 """
-
+function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real; 
+        default_distance::Int64=20)
     df = DataFrame(CSV.File(fname_count));
     df[!,:h3idx] = convert.(UInt64,df[!,:h3idx]);
 
     # Find the resolution and according to h3 resolution
     h3res = h3GetResolution(df.h3idx[1])
+    edge_length = get_avg_edge_length_km(h3res)
     println(@sprintf("Edge resolution : %d", h3res))
-    println(@sprintf("Edge length     : %.3f km", edgeLengthKm(h3res)))
+    #println(@sprintf("Edge length     : %.3f km", edgeLengthKm(h3res)))
+    println(@sprintf("Edge length     : %.3f km", edge_length))
 
-    maxdistk = Int(ceil(maxdistkm/edgeLengthKm(h3res)))
+    maxdistk = Int(ceil(maxdistkm / edge_length))
     println(@sprintf("Max dist k      : %d ", maxdistk))
 
     nocc = Dict{UInt64,Float32}()
@@ -79,8 +152,21 @@ julia> smoothing('count.csv', [[1.0, 20]], 50)
 
         dsts = zeros(Float32, length(idxs))
         for idx in enumerate(idxs)
-            d = h3Distance(base, idx[2])
-            dsts[idx[1]] = d * edgeLengthKm(h3res)
+            #println("base: ", base)
+            #println(typeof(base))
+            #println("idx[2] ", idx[2])
+            #println(typeof(idx[2]))
+            if base == idx[2]
+                d = Float32(0.0)
+            else
+                d = h3Distance(base, idx[2])
+                if d isa H3ErrorCode
+                    @info "failed: $(base), $(idx[2]). Using default $default_distance"
+                    d = default_distance
+                end
+
+            end
+            dsts[idx[1]] = Float32(d * edge_length)
             if dsts[idx[1]] < 1.0
                 dsts[idx[1]] = 1.0
             end

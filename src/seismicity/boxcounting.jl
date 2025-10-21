@@ -4,6 +4,34 @@ using Printf
 using TOML
 using DataFrames
 
+
+# Define compatibility shim if `geoToH3` doesn't exist, but `latLngToCell` does
+# Conditionally define GeoCoord at compile-time (valid and recommended)
+@static if !@isdefined(GeoCoord)
+    @info "Defining GeoCoord compatibility struct"
+    struct GeoCoord
+        lat::Float64 # in radians
+        lon::Float64 # in radians
+    end
+end
+
+# Runtime conditional method definition (always allowed)
+if !(@isdefined geoToH3) && (@isdefined latLngToCell)
+    @info "Defining geoToH3 compatibility shim"
+    function geoToH3(coord::GeoCoord, res::Integer)
+        #if res isa Int32
+        #    res = Int64(res)
+        #end
+        return latLngToCell(LatLng(coord.lat, coord.lon), res)
+    end
+
+    function h3ToGeo(cell_id)
+        lat_lng_rad = cellToLatLng(cell_id)
+        GeoCoord(lat_lng_rad.lat, lat_lng_rad.lng)
+    end
+end
+
+
 function get_gr_params(config::Dict, source_id::String)
 """
     get_gr_params(config, source_id
