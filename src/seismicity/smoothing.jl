@@ -63,7 +63,8 @@ end
 
 
 # the function and api have changed; the H3.jl library as of 3.2 is not defined correctly
-edge_length_check = edgeLengthKm(3)
+base = latLngToCell(LatLng(deg2rad(0), deg2rad(0)), 5)
+edge_length_check = edgeLengthKm(base)
 if edge_length_check isa Number
     const get_avg_edge_length_km = edgeLengthKm
 else
