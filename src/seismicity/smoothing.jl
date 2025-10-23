@@ -78,6 +78,26 @@ else
 end
         
 
+
+function gc_distance(lon1, lat1, lon2, lat2)
+
+    R = 6371.0
+
+    lon1 = deg2rad(lon1)
+    lat1 = deg2rad(lat1)
+    lon2 = deg2rad(lon2)
+    lat2 = deg2rad(lat2)
+
+    distance = asin(sqrt(sin((lat1 - lat2) / 2.0)^2.0
+                         +
+                         cos(lat1) * cos(lat2)
+                         * sin((lon1 - lon2) / 2.0)^2.0))
+
+    distance * 2.0 * R
+end
+
+
+
 function smoothing(fname_count::String, fname_config::String, fname_out::String="")
 
     model = TOML.parsefile(fname_config)
@@ -133,10 +153,15 @@ function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real;
     lats = Dict{UInt64,Float32}()
     println("Number nodes    : ", length(df.h3idx))
 
+
+    dist_lookup = Dict{Tuple{UInt64,UInt64},Float32}()
+
     for tmp in enumerate(zip(df.lon, df.lat, df.count))
 
+        cell_lon = tmp[2][1]
+        cell_lat = tmp[2][2]
         # Cell index to whick the current point (i.e. cell center) belongs to
-        base = geoToH3(GeoCoord(deg2rad(tmp[2][2]), deg2rad(tmp[2][1])), h3res);
+        base = geoToH3(GeoCoord(deg2rad(cell_lat), deg2rad(cell_lon)), h3res);
 
         # Get the indexes of cells within 'maxdistk' from the cell with index
         # equal to 'base'. 'maxdistk' is the distance in terms of the cell 
@@ -153,21 +178,30 @@ function smoothing(fname_count::String, smoothing_σs::Array, maxdistkm::Real;
 
         dsts = zeros(Float32, length(idxs))
         for idx in enumerate(idxs)
-            #println("base: ", base)
-            #println(typeof(base))
-            #println("idx[2] ", idx[2])
-            #println(typeof(idx[2]))
             if base == idx[2]
                 d = Float32(0.0)
             else
-                d = h3Distance(base, idx[2])
-                if d isa H3ErrorCode
-                    @info "failed: $(base), $(idx[2]). Using default $default_distance"
-                    d = default_distance
+                v = get(dist_lookup, (base, idx[2]), nothing)
+                if v !== nothing
+                    d = v
+                else
+                    # get lon and lat of surrounding bins. Add to lookup dicts if not added yet.
+                    idx_lon = get(lons, idx[2], nothing) # longitude of idx point in lons
+                    idx_lat = get(lats, idx[2], nothing)
+                    if idx_lon == nothing
+                        geo1 = h3ToGeo(idx[2])
+                        idx_lon = rad2deg(geo1.lon)
+                        idx_lat = rad2deg(geo1.lat)
+                        lons[idx[2]] = idx_lon
+                        lats[idx[2]] = idx_lat
+                    end
+                    d = Float32(gc_distance(cell_lon, cell_lat, idx_lon, idx_lat))
+                    dist_lookup[(base, idx[2])] = d
+                    dist_lookup[(idx[2], base)] = d
                 end
 
             end
-            dsts[idx[1]] = Float32(d * edge_length)
+            dsts[idx[1]] = d
             if dsts[idx[1]] < 1.0
                 dsts[idx[1]] = 1.0
             end
